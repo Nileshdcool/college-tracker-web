@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Table } from 'reactstrap';
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +15,14 @@ import AdvanceSearch from '../components/advance-search';
 import { Button } from 'reactstrap';
 import CollegeModal from '../modals/college.modal';
 import Chart from "react-google-charts";
+
+function renderStars(ratings){
+    let stars = '';
+    for (let index = 0; index < ratings; index++) {
+        stars+='*';
+    }
+    return stars;
+}
 
 const Dashboard = (props) => {
     const [searchName, setSearchTitle] = useState("");
@@ -43,7 +51,7 @@ const Dashboard = (props) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(retrieveAllColleges());
+        dispatch(retrieveAllColleges(searchName));
     }, []);
 
     const onChangeSearchName = e => {
@@ -53,7 +61,7 @@ const Dashboard = (props) => {
 
     const findByName = () => {
         setIsLoading(true);
-        dispatch(retrieveAllColleges());
+        dispatch(retrieveAllColleges(searchName));
     };
 
     const searchData = {
@@ -64,14 +72,7 @@ const Dashboard = (props) => {
 
     const headerData = ['Name', 'Year Founded', 'City', 'State', 'Country', 'Ratings', 'Action'];
 
-    const renderStars = (ratings) => {
-        let stars = ''
-        for (let index = 0; index < ratings; index++) {
-            stars = stars + '*'
-        }
-        return stars;
-    }
-
+   
     const renderChart = () => {
         return (
             <Chart
@@ -114,7 +115,7 @@ const Dashboard = (props) => {
                                 <td>{college.location.city}</td>
                                 <td>{college.location.state}</td>
                                 <td>{college.location.country}</td>
-                                <td>****</td>
+                                <td>{renderStars(4)}</td>
                                 <td> <Button color="primary" onClick={() => viewStudents(college)}>View</Button>{' '}</td>
                             </tr>
                         ))}
@@ -128,7 +129,7 @@ const Dashboard = (props) => {
             <SubHeader text='Welcome to the College Tracker'></SubHeader>
             {!isLoading ? <>
                 <Search searchData={searchData}></Search>
-                <AdvanceSearch toggleGrid={(value)=>setToggleGrid(value)}></AdvanceSearch>
+                <AdvanceSearch data={colleges} toggleGrid={(value)=>setToggleGrid(value)}></AdvanceSearch>
                 <CollegeModal students={students} modal={modal} setModal={setModal}></CollegeModal>
                 {toggleGrid ? renderChart() : renderTable()}
             </> : <AppSpinner></AppSpinner>}

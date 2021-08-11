@@ -4,9 +4,9 @@ import {
 
 import CollegeDataService from "../services/CollegeService";
 
-export const retrieveAllColleges = () => async (dispatch) => {
+export const retrieveAllColleges = (name) => async (dispatch) => {
     try {
-        const res = await CollegeDataService.retrieveAllColleges();
+        const res = await CollegeDataService.retrieveAllColleges(name);
         dispatch({
             type: RETRIEVE_ALL_COLLEGES,
             payload: res.data,
