@@ -11,22 +11,16 @@ import { AppSpinner } from '../components/spinner';
 import GridHeader from "../components/grid-header";
 import { SubHeader } from '../components/sub-header';
 import Search from '../components/search';
-import { Row, Col, Button, Container } from 'reactstrap';
+import { AvForm, AvField } from 'availity-reactstrap-validation';
+import { Row, Col, Button, Container, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import CollegeModal from '../modals/college.modal';
-
-
-function numberWithCommas(x) {
-    if (!x) {
-        return '';
-    }
-    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
-}
-
 const College = (props) => {
     const [searchName, setSearchTitle] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [pageSize, setPageSize] = useState(50);
     const [modal, setModal] = useState(false);
+    const [isStudentsModal, setIsStudentModal] = useState(false);
+    const [students, setStudents] = useState([]);
 
     let colleges = useSelector(state => {
         if (state.colleges.length > 0) {
@@ -47,7 +41,7 @@ const College = (props) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(retrieveAllColleges());
+        dispatch(retrieveAllColleges(''));
     }, []);
 
     const onChangeSearchName = e => {
@@ -57,7 +51,7 @@ const College = (props) => {
 
     const findByName = () => {
         setIsLoading(true);
-        dispatch(retrieveAllColleges());
+        dispatch(retrieveAllColleges(''));
     };
 
     const searchData = {
@@ -68,29 +62,58 @@ const College = (props) => {
 
     const headerData = ['Name', 'Year Founded', 'City', 'State', 'Country', 'Ratings', 'Action'];
 
-    const renderStars = (ratings) => {
-        let stars = ''
-        for (let index = 0; index < ratings; index++) {
-            stars = stars + '*'
-        }
-        return stars;
+    const renderCollegeModal = () => {
+        return (
+            <div>
+                <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+                    <ModalHeader toggle={() => setModal(!modal)}>Add New College</ModalHeader>
+                    <ModalBody>
+                        <AvForm>
+                            <AvField name="name" label="Name" required />
+                            <AvField name="yearFounded" label="Year Founded" type="number" />
+                            <AvField type="select" name="country" label="Country" helpMessage="Please Select Country">
+                                <option>1</option>
+                            </AvField>
+                            <AvField type="select" name="state" label="State" helpMessage="Please Select State">
+                                <option>1</option>
+                            </AvField>
+                            <AvField type="select" name="city" label="City" helpMessage="Please Select City">
+                                <option>1</option>
+                            </AvField>
+                            <AvField name="ratings" label="Ratings" type="number" max="10" />
+                        </AvForm>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary" onClick={() => setModal(false)}>Add</Button>{' '}
+                        <Button color="secondary" onClick={() => setModal(false)}>Cancel</Button>
+                    </ModalFooter>
+                </Modal>
+            </div>
+        )
     }
 
-    const view = () => {
+    const viewStudentDetails = () => {
         return (
-            <CollegeModal modalState={true}></CollegeModal>
+            <CollegeModal students={students} modal={isStudentsModal} setModal={setIsStudentModal}></CollegeModal>
         )
+    }
+
+    const onViewStudentClickHandler = (college) => {
+        setStudents(college.students);
+        setIsStudentModal(true);
     }
 
     return (
         <>
+            {renderCollegeModal()}
+            {viewStudentDetails()}
             <SubHeader text='Colleges'></SubHeader>
             {!isLoading ? <>
                 <Search searchData={searchData}></Search>
-                <Container style={{marginBottom:'10px'}}>
+                <Container style={{ marginBottom: '10px' }}>
                     <Row>
                         <Col sm={{ size: 'auto', offset: 11 }}>
-                            <Button color="primary">Add</Button>{' '}
+                            <Button onClick={() => setModal(true)} color="primary">Add</Button>{' '}
                         </Col>
                     </Row>
                 </Container>
@@ -105,7 +128,16 @@ const College = (props) => {
                                 <td>{college.location.state}</td>
                                 <td>{college.location.country}</td>
                                 <td>****</td>
-                                <td> <Button color="primary">View</Button>{' '}</td>
+                                <td>
+                                    <Row>
+                                        <Col>
+                                            <Button onClick={() => onViewStudentClickHandler(college)} color="primary">View Students</Button>{' '}
+                                        </Col>
+                                        <Col>
+                                            <Button onClick={() => setModal(true)} color="primary">Edit</Button>{' '}
+                                        </Col>
+                                    </Row>
+                                </td>
                             </tr>
                         ))}
                     </tbody>}

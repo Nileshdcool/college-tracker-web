@@ -18,7 +18,7 @@ const CollegeModal = (props) => {
                 <ModalHeader toggle={hideModal}>Student Details</ModalHeader>
                 <ModalBody>
                     <ListGroup>
-                        {students.map((s)=>(
+                        {students.map((s) => (
                             <ListGroupItem>{s.name}</ListGroupItem>
                         ))}
                     </ListGroup>
